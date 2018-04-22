@@ -82,6 +82,7 @@ You can see more information about a command by passing `--help` to the command,
 
 ##### gatefold deploy **domain**
 Creates a new Gatefold stack in your AWS account or updates an existing one.
+
 Specify TTL in days with `--ttl <ttl>`. The default is 3650, i.e. ten years.
 
 ##### gatefold delete **domain**
@@ -91,11 +92,13 @@ For `gatefold deploy` and `gatefold delete` possible to switch your default AWS 
 
 ##### gatefold get-swagger **domain**
 Builds the Swagger API definition for Gatefold and prints it to standard output.
+
 Specify TTL in days with `--ttl <ttl>`. The default is 3650, i.e. ten years.
 
 
 ##### gatefold get-cloudformation **domain**
 Builds the CloudFormation template for Gatefold and prints it to standard output.
+
 Specify TTL in days with `--ttl <ttl>`. The default is 3650, i.e. ten years.
 
 ## Built With
