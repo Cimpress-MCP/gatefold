@@ -1,5 +1,7 @@
 # Gatefold
 
+[![npm version](https://badge.fury.io/js/gatefold.svg)](https://badge.fury.io/js/gatefold)
+
 Gatefold is a quick to set up, simple to use URL shortener built with Amazon API Gateway and Amazon DynamoDB and codified with Amazon CloudFormation.
 
 Features:
