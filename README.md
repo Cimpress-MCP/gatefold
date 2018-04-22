@@ -1,7 +1,5 @@
 # Gatefold
 
-The compact URL shortener, developed at Cimpress.
-
 Gatefold is a quick to set up, simple to use URL shortener built with Amazon API Gateway and Amazon DynamoDB and codified with Amazon CloudFormation.
 
 Features:
@@ -26,14 +24,15 @@ Now that you've installed Gatefold, you can deploy your custom URL shortener ser
 ```
 gatefold deploy example.org
 ```
-This will create a new Gatefold stack in your default AWS account and region. To change the target, use `--profile <profile>` and `--region <region>`.
+This will create a new Gatefold stack in your default AWS account and region. To change the target, use `--profile <profile>` and `--region <region>`:
 ```
 gatefold deploy \
   --profile my-other-profile \
   --region eu-west-1 \
   example.org
 ```
-Afterwards, [set up a custom domain name](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html) and [add an ALIAS record](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-creating.html) for the Amazon CloudFront distribution to hook it up to your domain. Both operations are easily accessible in the web console.
+Afterwards, [set up a custom domain name](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html) and [add an ALIAS record](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-creating.html) for the Amazon CloudFront distribution to hook it up to your domain. Both operations are easily achievable in the web console.
+
 Wait for it to become available:
 ```
     until host example.org | grep address; do sleep 5; done \
@@ -55,9 +54,9 @@ Content-Type: application/json
 
 The server responds with the shortened URL and a token:
 ```
-HTTP/1.1 200 OK
+HTTP/1.1 201 Created
 Content-Type: application/json
-
+Location: https://example.org/f530e741
 {
     "longUrl": "https://cimpress.com",
     "shortUrl": "https://example.org/f530e741",
