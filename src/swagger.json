@@ -1,0 +1,647 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "2018-04-21T20:19:38Z",
+    "title": "Gatefold"
+  },
+  "host": "$GATEFOLD_DOMAIN",
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "description": "Request a shortened URL.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "PostRequest",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PostRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "201 response",
+            "schema": {
+              "$ref": "#/definitions/PostPutResponse"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Location": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "500 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              }
+            }
+          },
+          "503": {
+            "description": "503 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-request-validator": "Validate body",
+        "x-amazon-apigateway-integration": {
+          "credentials": { "Fn::GetAtt": [ "GatefoldAPIRole", "Arn" ] },
+          "uri": "arn:aws:apigateway:eu-west-1:dynamodb:action/UpdateItem",
+          "responses": {
+            "4\\d{2}": {
+              "statusCode": "503",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            },
+            "5\\d{2}": {
+              "statusCode": "500",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            },
+            "2\\d{2}": {
+              "statusCode": "201",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Location": "integration.response.body.Attributes.ShortUrl.S"
+              },
+              "responseTemplates": {
+                "application/json": "#set($id = $input.json(\"$.Attributes.ShortUrl.S\").replace('\"', \"\"))\n{\n    \"longUrl\": $input.json(\"$.Attributes.LongUrl.S\"),\n    \"shortUrl\": \"https://$GATEFOLD_DOMAIN/$id\",\n    \"token\": $input.json(\"$.Attributes.Token.S\")\n}"
+              }
+            }
+          },
+          "passthroughBehavior": "never",
+          "httpMethod": "POST",
+          "requestTemplates": {
+            "application/json": "#set ($guid = $context.requestId)\n#set ($suffix1 = $guid.substring(0,4))\n#set ($suffix2 = $guid.substring(24,28))\n#set ($suffix = \"$suffix1$suffix2\")\n#set ($token = $guid.substring(0))\n#set ($ttl = $context.requestTimeEpoch + 86400 * $GATEFOLD_TTL)\n{\n    \"TableName\": \"gatefold-$GATEFOLD_DOMAIN\",\n    \"Key\": {\n        \"ShortUrl\": {\n            \"S\": \"$suffix\"\n        }\n    },\n    \"ExpressionAttributeNames\": {\n        \"#Token\": \"Token\"\n    },\n    \"ExpressionAttributeValues\": {\n        \":longUrl\": {\n            \"S\": $input.json(\"$.longUrl\")\n        },\n        \":token\": {\n            \"S\": \"$token\"\n        },\n        \":currentTime\": {\n            \"S\": \"$context.requestTimeEpoch\"\n        },\n        \":expiresAt\": {\n            \"S\": \"$ttl\"\n        }\n    },\n    \"UpdateExpression\": \"SET LongUrl = :longUrl, #Token = :token, CreatedAt = :currentTime, ModifiedAt = :currentTime, ExpiresAt = :expiresAt\",\n    \"ConditionExpression\": \"attribute_not_exists(ShortUrl)\",\n    \"ReturnValues\": \"ALL_NEW\"\n}"
+          },
+          "type": "aws"
+        }
+      },
+      "options": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Methods": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Headers": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Methods": "'POST,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            }
+          },
+          "passthroughBehavior": "when_no_match",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "type": "mock"
+        }
+      }
+    },
+    "/livecheck": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "description": "Check if the service is live.",
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            }
+          },
+          "passthroughBehavior": "when_no_match",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "type": "mock"
+        }
+      },
+      "options": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Methods": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Headers": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Methods": "'GET,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            }
+          },
+          "passthroughBehavior": "when_no_match",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "type": "mock"
+        }
+      }
+    },
+    "/not-found": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "responses": {
+          "404": {
+            "description": "404 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "description": "Returns a 404 status code.",
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "404",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            }
+          },
+          "passthroughBehavior": "when_no_match",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 404}"
+          },
+          "type": "mock"
+        }
+      },
+      "options": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Methods": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Headers": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Methods": "'GET,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            }
+          },
+          "passthroughBehavior": "when_no_match",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "type": "mock"
+        }
+      }
+    },
+    "/{id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "description": "Resolve a shortened URL.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "302 response",
+            "headers": {
+              "Location": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "uri": "https://$GATEFOLD_DOMAIN/{id}/proxied",
+          "responses": {
+            "default": {
+              "statusCode": "302",
+              "responseParameters": {
+                "method.response.header.Location": "integration.response.body.longUrl"
+              },
+              "responseTemplates": {
+                "application/json": "#set($inputRoot = $input.path('$'))\n{}"
+              }
+            }
+          },
+          "requestParameters": {
+            "integration.request.path.id": "method.request.path.id"
+          },
+          "passthroughBehavior": "when_no_match",
+          "httpMethod": "GET",
+          "type": "http"
+        }
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "PutRequest",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PutRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/PostPutResponse"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              }
+            }
+          },
+          "400": {
+            "description": "400 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "500 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-request-validator": "Validate body",
+        "x-amazon-apigateway-integration": {
+          "credentials": { "Fn::GetAtt": [ "GatefoldAPIRole", "Arn" ] },
+          "uri": "arn:aws:apigateway:eu-west-1:dynamodb:action/UpdateItem",
+          "responses": {
+            "4\\d{2}": {
+              "statusCode": "400",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "responseTemplates": {
+                "application/json": "{\n  \"message\" : \"There already exists a resource with that ID and you've specified an incorrect token.\"\n}"
+              }
+            },
+            "5\\d{2}": {
+              "statusCode": "500",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            },
+            "2\\d{2}": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "responseTemplates": {
+                "application/json": "#set($id = $input.json(\"$.Attributes.ShortUrl.S\").replace('\"', \"\"))\n{\n    \"longUrl\": $input.json(\"$.Attributes.LongUrl.S\"),\n    \"shortUrl\": \"https://$GATEFOLD_DOMAIN/$id\",\n    \"token\": $input.json(\"$.Attributes.Token.S\")\n}"
+              }
+            }
+          },
+          "passthroughBehavior": "never",
+          "httpMethod": "POST",
+          "requestTemplates": {
+            "application/json": "#set ($suffix = $input.params(\"id\"))\n#set ($ttl = $context.requestTimeEpoch + 86400 * $GATEFOLD_TTL)\n#set ($token = $input.json(\"$.token\"))\n{\n    \"TableName\": \"gatefold-$GATEFOLD_DOMAIN\",\n    \"Key\": {\n        \"ShortUrl\": {\n            \"S\": \"$suffix\"\n        }\n    },\n    \"ExpressionAttributeNames\": {\n        \"#Token\": \"Token\"\n    },\n    \"ExpressionAttributeValues\": {\n        \":longUrl\": {\n            \"S\": $input.json('$.longUrl')\n        },\n        \":token\": {\n            \"S\": $token\n        },\n        \":currentTime\": {\n            \"S\": \"$context.requestTimeEpoch\"\n        },\n        \":expiresAt\": {\n            \"S\": \"$ttl\"\n        }\n    },\n    \"UpdateExpression\": \"SET LongUrl = :longUrl, #Token = :token, CreatedAt = if_not_exists(CreatedAt, :currentTime), ModifyTime = :currentTime, ExpiresAt = :expiresAt\",\n    \"ConditionExpression\": \"(attribute_not_exists(ShortUrl)) or (#Token = :token)\",\n    \"ReturnValues\": \"ALL_NEW\"\n}"
+          },
+          "type": "aws"
+        }
+      },
+      "options": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Methods": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Headers": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Methods": "'GET,PUT,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            }
+          },
+          "passthroughBehavior": "when_no_match",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "type": "mock"
+        }
+      }
+    },
+    "/{id}/proxied": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "description": "Required for applying a logical OR operator on one of the returned fields. This endpoint has no SLA and may be terminated without notice.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "credentials": { "Fn::GetAtt": [ "GatefoldAPIRole", "Arn" ] },
+          "uri": "arn:aws:apigateway:eu-west-1:dynamodb:action/GetItem",
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseTemplates": {
+                "application/json": "#set($inputRoot = $input.path('$'))\n#if($inputRoot.Item.LongUrl.S.isEmpty())\n  #set($val = \"https://$GATEFOLD_DOMAIN/not-found\")\n#else\n  #set($val = $inputRoot.Item.LongUrl.S)\n#end\n\n{\n  \"longUrl\": \"$val\"\n}"
+              }
+            }
+          },
+          "passthroughBehavior": "never",
+          "httpMethod": "POST",
+          "requestTemplates": {
+            "application/json": "{\n    \"TableName\": \"gatefold-$GATEFOLD_DOMAIN\",\n    \"Key\": {\n        \"ShortUrl\": {\n            \"S\": \"$input.params(\"id\")\"\n        }\n    }\n}"
+          },
+          "type": "aws"
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Methods": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Headers": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "credentials": { "Fn::GetAtt": [ "GatefoldAPIRole", "Arn" ] },
+          "uri": "arn:aws:apigateway:eu-west-1:dynamodb:action/GetItem",
+          "responses": {
+            "default": {
+              "statusCode": "200"
+            }
+          },
+          "passthroughBehavior": "never",
+          "httpMethod": "POST",
+          "type": "aws"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Empty": {
+      "type": "object",
+      "title": "Empty Schema"
+    },
+    "PostPutResponse": {
+      "type": "object",
+      "properties": {
+        "longUrl": {
+          "type": "string"
+        },
+        "shortUrl": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        }
+      },
+      "title": "PostPutRequest"
+    },
+    "PostRequest": {
+      "type": "object",
+      "required": [
+        "longUrl"
+      ],
+      "properties": {
+        "longUrl": {
+          "type": "string"
+        }
+      },
+      "title": "PostRequest"
+    },
+    "PutRequest": {
+      "type": "object",
+      "required": [
+        "longUrl",
+        "token"
+      ],
+      "properties": {
+        "longUrl": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        }
+      },
+      "title": "PutRequest"
+    }
+  },
+  "x-amazon-apigateway-gateway-responses": {
+    "ACCESS_DENIED": {
+      "statusCode": 403,
+      "responseParameters": {
+        "gatewayresponse.header.Access-Control-Allow-Origin": "'*'"
+      },
+      "responseTemplates": {
+        "application/json": "{\"message\":$context.error.messageString}"
+      }
+    },
+    "BAD_REQUEST_BODY": {
+      "statusCode": 400,
+      "responseParameters": {
+        "gatewayresponse.header.Access-Control-Allow-Origin": "'*'"
+      },
+      "responseTemplates": {
+        "application/json": "{\"message\":$context.error.messageString}"
+      }
+    },
+    "UNAUTHORIZED": {
+      "statusCode": 401,
+      "responseParameters": {
+        "gatewayresponse.header.Access-Control-Allow-Origin": "'*'"
+      },
+      "responseTemplates": {
+        "application/json": "{\"message\":$context.error.messageString}"
+      }
+    }
+  },
+  "x-amazon-apigateway-request-validators": {
+    "Validate body": {
+      "validateRequestParameters": false,
+      "validateRequestBody": true
+    }
+  }
+}

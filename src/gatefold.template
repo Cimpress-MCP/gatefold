@@ -1,0 +1,69 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+    "Resources": {
+      "GatefoldAPI": {
+        "Type": "AWS::ApiGateway::RestApi",
+        "Properties": {
+          "Body": $GATEFOLD_API,
+          "Description": "The compact URL shortener. Developed at Cimpress.",
+          "Name": "Gatefold-$GATEFOLD_DOMAIN"
+        }
+      },
+      "GatefoldAPIProductionDeployment": {
+        "Type" : "AWS::ApiGateway::Deployment",
+        "Properties" : {
+          "Description" : "Production environment deployment",
+          "RestApiId" : { "Ref": "GatefoldAPI" },
+          "StageName" : "master"
+        }
+      },
+      "GatefoldDDBTable": {
+        "Type" : "AWS::DynamoDB::Table",
+        "Properties" : {
+          "AttributeDefinitions" : [ {
+            "AttributeName": "ShortUrl",
+            "AttributeType": "S"
+          } ],
+          "KeySchema" : [ {
+            "AttributeName": "ShortUrl",
+            "KeyType": "HASH"
+          } ],
+          "ProvisionedThroughput" : {
+            "ReadCapacityUnits" : 1,
+            "WriteCapacityUnits" : 1
+          },
+          "TableName" : "gatefold-$GATEFOLD_DOMAIN"
+        }
+      },
+      "GatefoldAPIRole": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [ {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [ "apigateway.amazonaws.com" ]
+              },
+              "Action": "sts:AssumeRole"
+            } ]
+          },
+          "Policies": [ {
+            "PolicyName": "GatefoldAPIDDBPermission-$GATEFOLD_DOMAIN",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [ {
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:GetItem",
+                  "dynamodb:UpdateItem"
+                ],
+                "Resource": { "Fn::GetAtt": [ "GatefoldDDBTable", "Arn" ] }
+              } ]
+            }
+          } ],
+          "RoleName": "GatefoldAPIRole-$GATEFOLD_DOMAIN"
+        }
+      }
+    }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "gatefold",
+  "version": "1.0.0",
+  "description": "The compact URL shortener. Developed at Cimpress.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cimpress-MCP/gatefold.git"
+  },
+  "keywords": [
+    "cimpress",
+    "aws",
+    "api",
+    "gateway",
+    "api",
+    "dynamodb",
+    "ddb",
+    "url",
+    "shortener",
+    "url"
+  ],
+  "author": "Igor Sowinski <isowinski@cimpress.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Cimpress-MCP/gatefold/issues"
+  },
+  "homepage": "https://github.com/Cimpress-MCP/gatefold",
+  "dependencies": {
+    "aws-sdk": "^2.226.1",
+    "cfn": "^1.2.0",
+    "commander": "^2.15.1"
+  }
+}
