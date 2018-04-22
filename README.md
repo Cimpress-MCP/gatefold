@@ -5,7 +5,7 @@
 Gatefold is a quick to set up, simple to use URL shortener built with Amazon API Gateway and Amazon DynamoDB and codified with Amazon CloudFormation.
 
 Features:
-- deploy a URL shortener to your AWS account in **five seconds**!
+- deploy a URL shortener to your AWS account in less than a minute
 - shorten URLs and store a token to change it later
 - create vanity URLs by passing custom strings
 - specify a TTL for all shortened URLs on the domain.
