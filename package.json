@@ -1,6 +1,6 @@
 {
   "name": "gatefold",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "The compact URL shortener. Developed at Cimpress.",
   "main": "index.js",
   "scripts": {

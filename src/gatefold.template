@@ -20,10 +20,12 @@
       "GatefoldDDBTable": {
         "Type" : "AWS::DynamoDB::Table",
         "Properties" : {
-          "AttributeDefinitions" : [ {
-            "AttributeName": "ShortUrl",
-            "AttributeType": "S"
-          } ],
+          "AttributeDefinitions" : [
+            {
+              "AttributeName": "ShortUrl",
+              "AttributeType": "S"
+            }
+          ],
           "KeySchema" : [ {
             "AttributeName": "ShortUrl",
             "KeyType": "HASH"
@@ -31,6 +33,10 @@
           "ProvisionedThroughput" : {
             "ReadCapacityUnits" : 1,
             "WriteCapacityUnits" : 1
+          },
+          "TimeToLiveSpecification": {
+            "AttributeName" : "ExpiresAt",
+            "Enabled" : true
           },
           "TableName" : "gatefold-$GATEFOLD_DOMAIN"
         }
@@ -56,7 +62,7 @@
                 "Effect": "Allow",
                 "Action": [
                   "dynamodb:GetItem",
-                  "dynamodb:UpdateItem"
+                "dynamodb:UpdateItem"
                 ],
                 "Resource": { "Fn::GetAtt": [ "GatefoldDDBTable", "Arn" ] }
               } ]
