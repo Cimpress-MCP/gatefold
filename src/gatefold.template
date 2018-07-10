@@ -63,7 +63,7 @@
               "Effect": "Allow",
               "Action": [
                 "dynamodb:GetItem",
-              "dynamodb:UpdateItem"
+                "dynamodb:UpdateItem"
               ],
               "Resource": { "Fn::GetAtt": [ "GatefoldDDBTable", "Arn" ] }
             } ]

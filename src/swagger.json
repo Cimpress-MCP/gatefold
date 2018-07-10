@@ -2,12 +2,26 @@
   "swagger": "2.0",
   "info": {
     "version": "2018-04-21T20:19:38Z",
-    "title": "Gatefold"
+    "title": "Gatefold",
+    "contact": {
+      "name": "$CONTACT_NAME",
+      "email": "$CONTACT_EMAIL"
+    },
+    "termsOfService": "Tier 2"
   },
   "host": "$GATEFOLD_DOMAIN",
   "schemes": [
     "https"
   ],
+  "securityDefinitions": {
+    "auth0": {
+      "type": "oauth2",
+      "description": "Authentication with Auth0",
+      "flow": "implicit",
+      "authorizationUrl": "https://cimpress.auth0.com/authorize",
+      "scopes": {}
+    }
+  },
   "paths": {
     "/": {
       "post": {
@@ -62,7 +76,12 @@
         },
         "x-amazon-apigateway-request-validator": "Validate body",
         "x-amazon-apigateway-integration": {
-          "credentials": { "Fn::GetAtt": [ "GatefoldAPIRole", "Arn" ] },
+          "credentials": {
+            "Fn::GetAtt": [
+              "GatefoldAPIRole",
+              "Arn"
+            ]
+          },
           "uri": "arn:aws:apigateway:eu-west-1:dynamodb:action/UpdateItem",
           "responses": {
             "4\\d{2}": {
@@ -221,6 +240,87 @@
             "application/json": "{\"statusCode\": 200}"
           },
           "type": "mock"
+        }
+      }
+    },
+    "/swagger.json": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Methods": "'GET,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            }
+          },
+          "passthroughBehavior": "when_no_match",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "httpMethod": "GET",
+          "uri": {
+            "Fn:Join": [
+              "",
+              [
+                "https://apigateway.",
+                {
+                  "Ref" : "AWS::Region"
+                },
+                ".amazonaws.com/restapis/",
+                {
+                  "Ref": "GatefoldAPI"
+                },
+                "/stages/master/exports/swagger"
+              ]
+            ]
+          },
+          "type": "http"
+        }
+      },
+      "options": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Methods": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Headers": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     },
@@ -400,7 +500,12 @@
         },
         "x-amazon-apigateway-request-validator": "Validate body",
         "x-amazon-apigateway-integration": {
-          "credentials": { "Fn::GetAtt": [ "GatefoldAPIRole", "Arn" ] },
+          "credentials": {
+            "Fn::GetAtt": [
+              "GatefoldAPIRole",
+              "Arn"
+            ]
+          },
           "uri": "arn:aws:apigateway:eu-west-1:dynamodb:action/UpdateItem",
           "responses": {
             "4\\d{2}": {
@@ -504,7 +609,12 @@
           }
         },
         "x-amazon-apigateway-integration": {
-          "credentials": { "Fn::GetAtt": [ "GatefoldAPIRole", "Arn" ] },
+          "credentials": {
+            "Fn::GetAtt": [
+              "GatefoldAPIRole",
+              "Arn"
+            ]
+          },
           "uri": "arn:aws:apigateway:eu-west-1:dynamodb:action/GetItem",
           "responses": {
             "default": {
@@ -546,7 +656,12 @@
           }
         },
         "x-amazon-apigateway-integration": {
-          "credentials": { "Fn::GetAtt": [ "GatefoldAPIRole", "Arn" ] },
+          "credentials": {
+            "Fn::GetAtt": [
+              "GatefoldAPIRole",
+              "Arn"
+            ]
+          },
           "uri": "arn:aws:apigateway:eu-west-1:dynamodb:action/GetItem",
           "responses": {
             "default": {

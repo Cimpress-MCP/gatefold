@@ -21,14 +21,17 @@ class Gatefold {
     this.cl = fs.readFileSync(cloudformationPath).toString();
   }
 
-  build(scrubAws, domain, ttl) {
-    return this.buildCloudformationTemplate(this.buildSwagger(scrubAws, domain, ttl), domain);
+  build(scrubAws, region, domain, ttl, contact) {
+    return this.buildCloudformationTemplate(this.buildSwagger(scrubAws, region, domain, ttl, contact), domain);
   }
 
-  buildSwagger(scrubAws, domain, ttl) {
+  buildSwagger(scrubAws, region, domain, ttl, contact) {
     const replacements = {
       "GATEFOLD_DOMAIN": domain,
-      "GATEFOLD_TTL": ttl
+      "GATEFOLD_TTL": ttl,
+      "CONTACT_NAME": contact.name,
+      "CONTACT_EMAIL": contact.email,
+      "REGION": region
     };
 
     let substituted = this.swag;

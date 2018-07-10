@@ -27,14 +27,20 @@ commander
   .option("-r, --region <region>", "select another AWS region")
   .option("-p, --profile <profile>", "select another AWS profile\n")
   .option("-t, --ttl <ttl>", "provide a TTL in days", "3650")
+  .option("-c, --contactName <contactName>", "provide contact name", "Default User")
+  .option("-e, --contactEmail <contactEmail>", "provide contact email", "user@domain.com")
   .action((domain, options) => {
     configureAWS(options.profile, options.region);
 
     let name = makeStackName(domain);
     let ttl = options["ttl"];
+    let contact = {
+        name: options.contactName,
+        email: options.contactEmail
+    };
 
     let gatefold = new Gatefold(swaggerPath, cloudformationPath);
-    let template = gatefold.build(false, domain, ttl);
+    let template = gatefold.build(false, options.region, domain, ttl, contact);
 
     cfn({
       name,
@@ -52,25 +58,38 @@ commander
   .description("Build and return a Gatefold Swagger API definition")
   .option("-t, --ttl <ttl>", "provide a TTL in days", "3650")
   .option("-s, --scrub-aws", "remove AWS integration options", false)
+  .option("-c, --contactName <contactName>", "provide contact name", "Default User")
+  .option("-e, --contactEmail <contactEmail>", "provide contact email", "user@domain.com")
   .action((domain, options) => {
     let ttl = options["ttl"];
     let scrubAws = options["scrubAws"];
+    let contact = {
+      name: options.contactName,
+      email: options.contactEmail
+    };
 
     let gatefold = new Gatefold(swaggerPath, cloudformationPath);
-    let swagger = gatefold.buildSwagger(scrubAws, domain, ttl);
+    let swagger = gatefold.buildSwagger(scrubAws, domain, ttl, contact);
     console.log(JSON.stringify(swagger, null, 4));
   });
 
 commander
   .command("get-cloudformation <domain>")
   .description("Build and return a Gatefold Cloudformation template")
+  .option("-r, --region <region>", "select another AWS region")
   .option("-t, --ttl <ttl>", "provide a TTL in days", "3650")
+  .option("-c, --contactName <contactName>", "provide contact name", "Default User")
+  .option("-e, --contactEmail <contactEmail>", "provide contact email", "user@domain.com")
   .action((domain, options) => {
     let ttl = options["ttl"];
+    let contact = {
+      name: options.contactName,
+      email: options.contactEmail
+    };
 
     let gatefold = new Gatefold(swaggerPath, cloudformationPath);
 
-    let template = gatefold.build(false, domain, ttl);
+    let template = gatefold.build(false, options.region, domain, ttl, contact);
     console.log(JSON.stringify(template, null, 4));
   });
 
