@@ -1,6 +1,6 @@
 {
   "name": "gatefold",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "The compact URL shortener. Developed at Cimpress.",
   "main": "index.js",
   "scripts": {
@@ -33,7 +33,7 @@
   "homepage": "https://github.com/Cimpress-MCP/gatefold",
   "dependencies": {
     "aws-sdk": "^2.226.1",
-    "cfn": "^1.2.0",
+    "cfn": "^1.6.0",
     "commander": "^2.15.1"
   }
 }
