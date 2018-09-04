@@ -1,11 +1,6 @@
 language: node_js
 node_js:
 - '6'
-install:
-- npm install
-script:
-- npm run-script build
-- npm run-script test
 deploy:
   provider: npm
   email: TrdelnikSquad@cimpress.com

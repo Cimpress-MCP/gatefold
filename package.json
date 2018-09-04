@@ -4,7 +4,6 @@
   "description": "The compact URL shortener. Developed at Cimpress.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
     "gatefold": "./bin/gatefold.js"
