@@ -610,8 +610,8 @@
     }
   },
   "x-amazon-apigateway-gateway-responses": {
-    "ACCESS_DENIED": {
-      "statusCode": 403,
+    "DEFAULT_4XX": {
+      "statusCode": "400",
       "responseParameters": {
         "gatewayresponse.header.Access-Control-Allow-Origin": "'*'"
       },
@@ -619,17 +619,8 @@
         "application/json": "{\"message\":$context.error.messageString}"
       }
     },
-    "BAD_REQUEST_BODY": {
-      "statusCode": 400,
-      "responseParameters": {
-        "gatewayresponse.header.Access-Control-Allow-Origin": "'*'"
-      },
-      "responseTemplates": {
-        "application/json": "{\"message\":$context.error.messageString}"
-      }
-    },
-    "UNAUTHORIZED": {
-      "statusCode": 401,
+    "DEFAULT_5XX": {
+      "statusCode": "500",
       "responseParameters": {
         "gatewayresponse.header.Access-Control-Allow-Origin": "'*'"
       },
