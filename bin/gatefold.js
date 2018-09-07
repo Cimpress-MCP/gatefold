@@ -18,6 +18,7 @@ const configureAWS = (profile, region) => {
 };
 
 const makeStackName = domain => `Gatefold-${domain.replace(new RegExp("\\.", "g"), "-")}`;
+const resolvePath = (pathToFile) => pathToFile ? path.resolve(pathToFile) : null;
 
 commander.version(version);
 
@@ -25,16 +26,18 @@ commander
   .command("deploy <domain>")
   .description("Create or update a Gatefold stack")
   .option("-r, --region <region>", "select another AWS region")
-  .option("-p, --profile <profile>", "select another AWS profile\n")
+  .option("-p, --profile <profile>", "select another AWS profile")
   .option("-t, --ttl <ttl>", "provide a TTL in days", "3650")
+  .option("-x, --external-swagger-transform <file>", "Transform public Swagger with a Node.js script\n")
   .action((domain, options) => {
     configureAWS(options.profile, options.region);
 
     let name = makeStackName(domain);
-    let ttl = options["ttl"];
+    let { ttl, externalSwaggerTransform } = options;
+    externalSwaggerTransform = resolvePath(externalSwaggerTransform);
 
     let gatefold = new Gatefold(swaggerPath, cloudformationPath);
-    let template = gatefold.build(false, domain, ttl);
+    let template = gatefold.build(false, domain, ttl, externalSwaggerTransform);
 
     cfn({
       name,
@@ -52,12 +55,13 @@ commander
   .description("Build and return a Gatefold Swagger API definition")
   .option("-t, --ttl <ttl>", "provide a TTL in days", "3650")
   .option("-s, --scrub-aws", "remove AWS integration options", false)
+  .option("-x, --external-swagger-transform <file>", "Transform public Swagger with a Node.js script\n")
   .action((domain, options) => {
-    let ttl = options["ttl"];
-    let scrubAws = options["scrubAws"];
+    let { ttl, scrubAws, externalSwaggerTransform } = options;
+    externalSwaggerTransform = resolvePath(externalSwaggerTransform);
 
     let gatefold = new Gatefold(swaggerPath, cloudformationPath);
-    let swagger = gatefold.buildSwagger(scrubAws, domain, ttl);
+    let swagger = gatefold.buildSwagger(scrubAws, domain, ttl, externalSwaggerTransform);
     console.log(JSON.stringify(swagger, null, 4));
   });
 
@@ -65,12 +69,14 @@ commander
   .command("get-cloudformation <domain>")
   .description("Build and return a Gatefold Cloudformation template")
   .option("-t, --ttl <ttl>", "provide a TTL in days", "3650")
+  .option("-x, --external-swagger-transform <file>", "Transform public Swagger with a Node.js script\n")
   .action((domain, options) => {
-    let ttl = options["ttl"];
+    let { ttl, externalSwaggerTransform } = options;
+    externalSwaggerTransform = resolvePath(externalSwaggerTransform);
 
     let gatefold = new Gatefold(swaggerPath, cloudformationPath);
 
-    let template = gatefold.build(false, domain, ttl);
+    let template = gatefold.build(false, domain, ttl, externalSwaggerTransform);
     console.log(JSON.stringify(template, null, 4));
   });
 
