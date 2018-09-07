@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "description": "A simple service that provide URL shortening capabilities through the $GATEFOLD_DOMAIN domain. \n\n A longer URL can be shortened to the following form: https://$GATEFOLD_DOMAIN/[uniqueId]. When accessed, this short URL will automatically redirect to the original using a standard HTTP 302 response with a properly set Location header.\n\nHappy shortening!",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "title": "Gatefold"
   },
   "host": "$GATEFOLD_DOMAIN",
