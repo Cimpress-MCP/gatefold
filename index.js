@@ -3,15 +3,15 @@
 const fs = require("fs");
 const cloneDeep = require("lodash.clonedeep");
 
-const dfsScrubAws = obj => {
+const dfsScrubKey = (obj, unwantedKey) => {
   Object.keys(obj).map(k => {
-    if (k.startsWith("x-amazon")) {
+    if (k.startsWith(unwantedKey)) {
       delete obj[k];
       return;
     }
 
     if (typeof obj[k] === "object") {
-      dfsScrubAws(obj[k])
+      dfsScrubKey(obj[k], unwantedKey)
     }
   });
 };
@@ -29,7 +29,7 @@ class Gatefold {
   setSwaggerRouteResponse(swaggerObject) {
     let publicSwagger = cloneDeep(swaggerObject);
 
-    dfsScrubAws(publicSwagger);
+    dfsScrubKey(publicSwagger, "x-amazon-apigateway");
     delete publicSwagger.paths["/{id}/proxied"];
     delete publicSwagger.paths["/not-found"];
 
@@ -57,8 +57,9 @@ class Gatefold {
     this.setSwaggerRouteResponse(materialization);
 
     if (scrubAws) {
-      dfsScrubAws(materialization);
+      dfsScrubKey(materialization, "x-amazon-apigateway");
     }
+    dfsScrubKey(materialization, "example");
 
     return materialization;
   }
