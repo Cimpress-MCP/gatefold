@@ -1,7 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "2018-04-21T20:19:38Z",
+    "description": "A simple service that provide URL shortening capabilities through the $GATEFOLD_DOMAIN domain. \n\n A longer URL can be shortened to the following form: https://$GATEFOLD_DOMAIN/[uniqueId]. When accessed, this short URL will automatically redirect to the original using a standard HTTP 302 response with a properly set Location header.\n\nHappy shortening!",
+    "version": "1.0.7",
     "title": "Gatefold"
   },
   "host": "$GATEFOLD_DOMAIN",
@@ -17,7 +18,7 @@
         "produces": [
           "application/json"
         ],
-        "description": "Request a shortened URL.",
+        "summary": "Request a short URL within the $GATEFOLD_DOMAIN domain.",
         "parameters": [
           {
             "in": "body",
@@ -27,10 +28,10 @@
               "$ref": "#/definitions/PostRequest"
             }
           }
-        ],
+        ], 
         "responses": {
           "201": {
-            "description": "201 response",
+            "description": "Shortened version created successfully",
             "schema": {
               "$ref": "#/definitions/PostPutResponse"
             },
@@ -44,7 +45,7 @@
             }
           },
           "500": {
-            "description": "500 response",
+            "description": "Internal server error",
             "headers": {
               "Access-Control-Allow-Origin": {
                 "type": "string"
@@ -52,7 +53,7 @@
             }
           },
           "503": {
-            "description": "503 response",
+            "description": "Service temporarily unavailable",
             "headers": {
               "Access-Control-Allow-Origin": {
                 "type": "string"
@@ -149,7 +150,7 @@
         "produces": [
           "application/json"
         ],
-        "description": "Check if the service is live.",
+        "description": "Provide a healthcheck interface.",
         "responses": {
           "200": {
             "description": "200 response",
@@ -306,7 +307,7 @@
         "produces": [
           "application/json"
         ],
-        "description": "Resolve a shortened URL.",
+        "summary": "Retrieve the long URL associated with the id. This endpoint returns a HTTP 302 response with a Location header containing the long URL.",
         "parameters": [
           {
             "name": "id",
@@ -317,9 +318,10 @@
         ],
         "responses": {
           "302": {
-            "description": "302 response",
+            "description": "Redirection to the original URL",
             "headers": {
               "Location": {
+                "description": "Location of the original resource",
                 "type": "string"
               }
             }
@@ -353,9 +355,11 @@
         "produces": [
           "application/json"
         ],
+        "summary": "Updates the URL hidden behind the specified ID and refreshes the TTL of the ID, meaning that the short URL will continue to be available for a longer period of time.",
         "parameters": [
           {
             "name": "id",
+            "description": "An unique ID identifying the short URL to update",
             "in": "path",
             "required": true,
             "type": "string"
@@ -371,7 +375,7 @@
         ],
         "responses": {
           "200": {
-            "description": "200 response",
+            "description": "Short URL successfully updated",
             "schema": {
               "$ref": "#/definitions/PostPutResponse"
             },
@@ -569,13 +573,20 @@
       "type": "object",
       "properties": {
         "longUrl": {
-          "type": "string"
+          "type": "string",
+          "description": "The long URL which the short URL will redirect to.",
+          "example": "https://www.example.org"
         },
         "shortUrl": {
-          "type": "string"
+          "type": "string",
+          "description": "The short URL that would automatically redirect to the configured long URL.",
+          "example": "https://$GATEFOLD_DOMAIN/ae7d2f3e"
         },
         "token": {
-          "type": "string"
+          "type": "string",
+          "description": "A token that can be used to update the long URL for the generated short URL at later stage.",
+          "example": "ae7d8ca0-8533-11e8-8eba-2f3e608cc07e"
+
         }
       },
       "title": "PostPutRequest"
@@ -587,7 +598,9 @@
       ],
       "properties": {
         "longUrl": {
-          "type": "string"
+          "type": "string",
+          "description": "The long URL to shorten",
+          "example": "https://www.example.org"
         }
       },
       "title": "PostRequest"
@@ -600,10 +613,14 @@
       ],
       "properties": {
         "longUrl": {
-          "type": "string"
+          "type": "string",
+          "description": "A (new) URL to use for the specified short URL",
+          "example": "https://www.example.org"
         },
         "token": {
-          "type": "string"
+          "type": "string",
+          "description": "The token that was generated when the short URL was initially created.",
+          "example": "ae7d8ca0-8533-11e8-8eba-2f3e608cc07e"
         }
       },
       "title": "PutRequest"
