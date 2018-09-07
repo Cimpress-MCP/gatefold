@@ -1,6 +1,7 @@
 "use strict";
 
 const fs = require("fs");
+const cloneDeep = require("lodash.clonedeep");
 
 const dfsScrubAws = obj => {
   Object.keys(obj).map(k => {
@@ -25,6 +26,16 @@ class Gatefold {
     return this.buildCloudformationTemplate(this.buildSwagger(scrubAws, domain, ttl), domain);
   }
 
+  setSwaggerRouteResponse(swaggerObject) {
+    let publicSwagger = cloneDeep(swaggerObject);
+
+    dfsScrubAws(publicSwagger);
+    delete publicSwagger.paths["/{id}/proxied"];
+    delete publicSwagger.paths["/not-found"];
+
+    swaggerObject.paths["/swagger"].get["x-amazon-apigateway-integration"].responses.default.responseTemplates["application/json"] = JSON.stringify(publicSwagger);
+  }
+
   buildSwagger(scrubAws, domain, ttl) {
     const replacements = {
       "GATEFOLD_DOMAIN": domain,
@@ -36,18 +47,20 @@ class Gatefold {
       substituted = substituted.replace(new RegExp(`\\$${r}`, "g"), () => replacements[r]);
     });
 
-    let output;
+    let materialization;
     try {
-      output = JSON.parse(substituted);
+      materialization = JSON.parse(substituted);
     } catch(err) {
       throw new Error("There were errors in the Swagger API definition after building it.");
     }
 
+    this.setSwaggerRouteResponse(materialization);
+
     if (scrubAws) {
-      dfsScrubAws(output);
+      dfsScrubAws(materialization);
     }
 
-    return output;
+    return materialization;
   }
 
   buildCloudformationTemplate(swagger, domain) {
