@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const cloneDeep = require("lodash.clonedeep");
+const { version } = require("./package");
 
 const dfsScrubKey = (obj, unwantedKey) => {
   Object.keys(obj).map(k => {
@@ -22,24 +23,40 @@ class Gatefold {
     this.cl = fs.readFileSync(cloudformationPath).toString();
   }
 
-  build(scrubAws, domain, ttl) {
-    return this.buildCloudformationTemplate(this.buildSwagger(scrubAws, domain, ttl), domain);
+  build(scrubAws, domain, ttl, externalSwaggerTransform) {
+    return this.buildCloudformationTemplate(this.buildSwagger(scrubAws, domain, ttl, externalSwaggerTransform), domain);
   }
 
-  setSwaggerRouteResponse(swaggerObject) {
+  setSwaggerRouteResponse(swaggerObject, externalSwaggerTransform) {
     let publicSwagger = cloneDeep(swaggerObject);
 
     dfsScrubKey(publicSwagger, "x-amazon-apigateway");
     delete publicSwagger.paths["/{id}/proxied"];
     delete publicSwagger.paths["/not-found"];
 
+    if (externalSwaggerTransform) {
+      let transform;
+      try {
+        transform = require(externalSwaggerTransform);
+      } catch(err) {
+        throw new Error(`Could not load file ${externalSwaggerTransform}.`);
+      }
+
+      if (typeof transform !== "function") {
+        throw new Error(`The file ${externalSwaggerTransform} does not export a JavaScript function.`);
+      }
+
+      publicSwagger = transform(publicSwagger);
+    }
+
     swaggerObject.paths["/swagger"].get["x-amazon-apigateway-integration"].responses.default.responseTemplates["application/json"] = JSON.stringify(publicSwagger);
   }
 
-  buildSwagger(scrubAws, domain, ttl) {
+  buildSwagger(scrubAws, domain, ttl, externalSwaggerTransform) {
     const replacements = {
       "GATEFOLD_DOMAIN": domain,
-      "GATEFOLD_TTL": ttl
+      "GATEFOLD_TTL": ttl,
+      "GATEFOLD_VERSION": version
     };
 
     let substituted = this.swag;
@@ -54,7 +71,7 @@ class Gatefold {
       throw new Error("There were errors in the Swagger API definition after building it.");
     }
 
-    this.setSwaggerRouteResponse(materialization);
+    this.setSwaggerRouteResponse(materialization, externalSwaggerTransform);
 
     if (scrubAws) {
       dfsScrubKey(materialization, "x-amazon-apigateway");
