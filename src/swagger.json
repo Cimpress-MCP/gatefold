@@ -417,6 +417,9 @@
               "Location": {
                 "description": "Location of the original resource",
                 "type": "string"
+              },
+              "Access-Control-Expose-Headers": {
+                "type": "string"
               }
             }
           }
@@ -427,7 +430,8 @@
             "default": {
               "statusCode": "302",
               "responseParameters": {
-                "method.response.header.Location": "integration.response.body.longUrl"
+                "method.response.header.Location": "integration.response.body.longUrl",
+                "method.response.header.Access-Control-Expose-Headers": "'Location'"
               },
               "responseTemplates": {
                 "application/json": "#set($inputRoot = $input.path('$'))\n{}"
